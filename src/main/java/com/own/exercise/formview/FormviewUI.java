@@ -22,7 +22,9 @@ import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.VerticalLayout;
 import com.own.exercise.entities.EntityManagerFunction;
+import com.own.exercise.entities.Responder;
 import com.own.exercise.validators.InputValidators;
 
 @SuppressWarnings("serial")
@@ -35,8 +37,7 @@ public class FormviewUI extends UI {
 	}
 
 	private final FormLayout layout = createForm();
-	//private TextArea reason = new TextArea("Why are you applying to this job?");
-	//private Label count = new Label(reason.getValue().length() + " of " + reason.getMaxLength());
+	
 	@Override
 	protected void init(VaadinRequest request) {
 		layout.setStyleName("mytheme");		
@@ -62,9 +63,11 @@ public class FormviewUI extends UI {
 		gender.addValidator(new NullValidator(
 							"Gender is needed to specify", false));
 		gender.setValidationVisible(false);
+		
 		final TextArea reason = new TextArea("Why are you applying to this job?");
-		/*reason.addValidator(new RegexpValidator("^.{1,1000}$", "Answer" +
-				" length can be 0-1000 characters")); */
+		/* No validation needed for this field. Length can be 0-1000 characters
+		 * max value is checked by TextArea property maxLength
+		 */
 		reason.setMaxLength(1000);
 		reason.addTextChangeListener(new TextChangeListener() {
 			
@@ -74,13 +77,7 @@ public class FormviewUI extends UI {
 				count.setValue(event.getText().length() + " of " + reason.getMaxLength());;
 			}
 		});
-		
-		
-		
-		//count = new Label(reason.getValue().length() + " of " + reason.getMaxLength());
-		
-		fLayout.addComponents(gender, reason, count);
-        		
+		fLayout.addComponents(gender, reason, count);        		
 		return fLayout;
 	}
 
@@ -95,11 +92,13 @@ public class FormviewUI extends UI {
 		fieldName.setNullRepresentation("");
 		fieldName.setImmediate(true);
 		fieldName.setNullSettingAllowed(true);
-		fieldName.addValidator(new RegexpValidator("[a-ö,A-Ö]+",name + 
+		fieldName.setMaxLength(50);
+		fieldName.addValidator(new RegexpValidator("[a-öA-Ö-]+",name + 
 								" contains illegal characters, aA-öÖ allowed"));
-		fieldName.addValidator(new RegexpValidator("^.{3,50}$",name + 
-				" length can be 3-50 characters"));
+		fieldName.addValidator(new RegexpValidator("^.{3," +fieldName.
+				getMaxLength()+"}$",name + " length can be 3-50 characters"));
 		fieldName.setValidationVisible(false);
+		
 		return fieldName;
 		
 	}
@@ -122,13 +121,33 @@ public class FormviewUI extends UI {
 				}
 				if (result != false ) {
 					EntityManagerFunction emf = new EntityManagerFunction();
-					emf.storeData(layout);
+					Boolean storingResult = emf.storeData(layout);
+					if (storingResult == true ) {
+						showCommittedData();
+					} else {
+						Notification.show("Something went wrong during storing"
+								+ "data. Please verify inputted data and try "
+								+ "commit again");
+					}
 				}
 			}
 		});
 		return button;
 	}
 	
-	
+	private void showCommittedData () {
+		Label label = new Label("Data have been stored to DB. You can now "
+				+ "close window. Thank you.");
+		
+		layout.getComponent(layout.getComponentCount()-1).setVisible(false);
+		layout.getComponent(layout.getComponentCount()-2).setVisible(false);
+		for (Integer i = 0; i <= layout.getComponentCount()-1; i++) {										
+			(layout.getComponent(i)).setVisible(false);    					
+		}
+		layout.addComponent(label);
+		EntityManagerFunction ent = new EntityManagerFunction();
+		ent.getData(layout);
+		
+	}
 
 }

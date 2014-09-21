@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.TextArea;
@@ -21,9 +22,11 @@ public class Responder implements Serializable {
 	private int id;
 	
 	@Column(name = "FIRST_NAME", nullable = false, length=50)
+	@NotNull
 	private String firstName;
 	
 	@Column(name = "LAST_NAME", nullable = false, length=50)
+	@NotNull
 	private String lastName;
 	
 	@Column(name = "GENDER", nullable = false, length=6)
