@@ -1,6 +1,5 @@
 package com.own.exercise.entities;
 
-import java.sql.ResultSet;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -9,15 +8,9 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
 
-import org.eclipse.persistence.exceptions.DatabaseException;
-import org.eclipse.persistence.exceptions.OptimisticLockException;
 import org.eclipse.persistence.expressions.ExpressionBuilder;
-import org.eclipse.persistence.internal.jpa.EJBQueryImpl;
 import org.eclipse.persistence.jpa.JpaEntityManager;
-import org.eclipse.persistence.queries.DatabaseQuery;
 import org.eclipse.persistence.queries.ReadAllQuery;
-import org.eclipse.persistence.sessions.Session;
-
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
@@ -71,7 +64,8 @@ public class EntityManagerFunction {
 		    em.persist(resp);
 		    userTransaction.commit();
 	    } catch(Exception ex) {
-	    	if(userTransaction != null && userTransaction.isActive()) userTransaction.rollback();
+	    	if(userTransaction != null && userTransaction.
+	    			isActive()) userTransaction.rollback();
 	    } finally {
 	      em.close();
 	      entityManagerFactory.close();
@@ -79,12 +73,19 @@ public class EntityManagerFunction {
 	    return true; /* everything went fine */
 	}
 
+	/* Function for reading data from database. Get user data based on
+	 * values in first name and last name fields. If several found
+	 * last one will be displayed
+	 */
 	public boolean getData (FormLayout layout) {
 		EntityManagerFactory entityManagerFactory =  Persistence.
 				createEntityManagerFactory("persistenceUnit");
 	    EntityManager em = entityManagerFactory.createEntityManager();
 
 	    try {
+	    	/* Build Query for getting user data according to first
+	    	 * and last names. 
+	    	 */
 	    	ExpressionBuilder builder = new ExpressionBuilder();
 	    	ReadAllQuery databaseQuery = new ReadAllQuery(Responder.class,
 	    			builder);
@@ -123,6 +124,7 @@ public class EntityManagerFunction {
 		    		getReason());
 		    layout.addComponents(name, reason);
 	    } catch(Exception ex) {	 
+	    	/* Something went wrong in DB Query */
 	    	Notification.show(ex.getMessage());
 	    } finally {
 	      em.close();

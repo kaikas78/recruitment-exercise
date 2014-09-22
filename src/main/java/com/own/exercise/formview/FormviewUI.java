@@ -4,8 +4,6 @@ import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.data.Property.ValueChangeEvent;
-import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.util.ObjectProperty;
 import com.vaadin.data.validator.NullValidator;
 import com.vaadin.data.validator.RegexpValidator;
@@ -22,9 +20,7 @@ import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.VerticalLayout;
 import com.own.exercise.entities.EntityManagerFunction;
-import com.own.exercise.entities.Responder;
 import com.own.exercise.validators.InputValidators;
 
 @SuppressWarnings("serial")
@@ -35,7 +31,7 @@ public class FormviewUI extends UI {
 	@VaadinServletConfiguration(productionMode = false, ui = FormviewUI.class)
 	public static class Servlet extends VaadinServlet {
 	}
-
+    /* Master layout for form fields */
 	private final FormLayout layout = createForm();
 	
 	@Override
@@ -64,7 +60,8 @@ public class FormviewUI extends UI {
 							"Gender is needed to specify", false));
 		gender.setValidationVisible(false);
 		
-		final TextArea reason = new TextArea("Why are you applying to this job?");
+		final TextArea reason = new TextArea("Why are you applying "
+				+ "to this job?");
 		/* No validation needed for this field. Length can be 0-1000 characters
 		 * max value is checked by TextArea property maxLength
 		 */
@@ -74,7 +71,8 @@ public class FormviewUI extends UI {
 			@Override
 			public void textChange(TextChangeEvent event) {
 				// TODO Auto-generated method stub
-				count.setValue(event.getText().length() + " of " + reason.getMaxLength());;
+				count.setValue(event.getText().length() + " of " + 
+						reason.getMaxLength());;
 			}
 		});
 		fLayout.addComponents(gender, reason, count);        		
@@ -94,7 +92,7 @@ public class FormviewUI extends UI {
 		fieldName.setNullSettingAllowed(true);
 		fieldName.setMaxLength(50);
 		fieldName.addValidator(new RegexpValidator("[a-öA-Ö-]+",name + 
-								" contains illegal characters, aA-öÖ allowed"));
+							" contains illegal characters, aA-öÖ allowed"));
 		fieldName.addValidator(new RegexpValidator("^.{3," +fieldName.
 				getMaxLength()+"}$",name + " length can be 3-50 characters"));
 		fieldName.setValidationVisible(false);
@@ -117,9 +115,15 @@ public class FormviewUI extends UI {
 				 */
 				for (Integer i = 0; i <= layout.getComponentCount()-3; i++) {										
 					result = isValid.validateField(i, layout);
-					if (result == false) break;
+					if (result == false) {
+						/* Validation failure, no need to continue */
+						break;
+					}
 				}
 				if (result != false ) {
+					/* Validations succeeded, store data to DB and go to
+					 * show data view.
+					 */
 					EntityManagerFunction emf = new EntityManagerFunction();
 					Boolean storingResult = emf.storeData(layout);
 					if (storingResult == true ) {
@@ -135,6 +139,9 @@ public class FormviewUI extends UI {
 		return button;
 	}
 	
+	/* Function for hiding form fields and showing end comments and 
+	 * stored data values from DB.
+	 */
 	private void showCommittedData () {
 		Label label = new Label("Data have been stored to DB. You can now "
 				+ "close window. Thank you.");
